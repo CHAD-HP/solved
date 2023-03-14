@@ -2,53 +2,74 @@ package silver;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.List;
 
 public class P14889 {
-    static int N;
+    static int N, board[][], s[], total;
+    static boolean[] visited;
     static int min = Integer.MAX_VALUE;
     public static void main(String[] args) throws Exception {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         N = Integer.parseInt(br.readLine());
-        int[][] board = new int[N][N];
-
+        board = new int[N][N];
+        visited = new boolean[N];
+        s = new int[N];
+        total = 0;
         for(int i=0; i < N; i++){
             String[] items = br.readLine().split(" ");
             for(int j=0; j < N; j++){
                 board[i][j] = Integer.parseInt(items[j]);
+                total += board[i][j];
             }
         }
 
-        doIt(board, new ArrayList<>(), 0);
+        for(int i=0; i < N; i++){
+            for(int j= 0; j < N; j++){
+                s[i] += board[i][j] + board[j][i];
+            }
+        }
+
+        doIt(0, 0,0);
+//        doIt( 0,0);
 
         System.out.println(min);
     }
 
-    private static void doIt(int[][] board, List<Integer> item, int bit){
-        if(item.size() == N){
-            int start = sum(board, item, 0);
-            int link = sum(board, item, item.size() / 2);
-            min = Math.min(min, Math.abs(start - link));
+    private static void doIt(int bit, int count, int pos){
+//    private static void doIt(int count, int pos){
+        if(count == N / 2){
+            getMin(bit);
+//            getMin();
             return;
         }
 
-        for(int i=0; i < N; i++){
-            if((bit & 1 << i) == 1 << i) continue;
-            item.add(i);
-            doIt(board, item, bit | 1 << i);
-            item.remove(item.size() - 1);
+        for(int i=pos; i < N; i++){
+//            if(visited[i]) continue;
+//            visited[i] = true;
+            if(!check(bit, i)) {
+                doIt(bit | 1 << i, count + 1, pos + 1);
+            }
+//            doIt(count + 1, pos + 1);
+//            visited[i] = false;
         }
     }
 
-    private static int sum(int[][] board, List<Integer> item, int start){
-        int sum = 0;
-        int end = start + item.size() / 2;
-        for(int i=start; i < end - 1; i++){
-            for(int j=i + 1; j < end; j++){
-                sum += board[item.get(i)][item.get(j)] + board[item.get(j)][item.get(i)];
-            }
+    private static void getMin(int bit){
+//    private static void getMin(){
+        int link = 0;
+
+        for(int i=0; i < N - 1; i++){
+            if(check(bit, i))
+//            if(visited[i])
+                link += s[i];
         }
-        return sum;
+        min = Math.min(min, Math.abs(total - link));
+        if(min == 0){
+            System.out.println(min);
+            System.exit(0);
+        }
+    }
+
+    private static boolean check(int bit, int i){
+        return (bit & 1 << i) == 1 << i;
     }
 }
